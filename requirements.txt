@@ -1,0 +1,7 @@
+fabric
+decorator
+requests
+# Following line is only temporary - till:
+# https://github.com/pyinvoke/invoke/pull/640
+# is merged and included in a Invoke release
+-e git://github.com/cytadela8/invoke.git#egg=invoke
