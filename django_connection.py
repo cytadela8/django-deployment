@@ -181,8 +181,8 @@ class DjangoConnection:
             raise Exception("Not an available version")
         if os.path.basename(path) in self.get_protected_versions():
             raise Exception("Refusing to delete protected version")
-        logger.info("Deleting {}".format(q(path)))
-        self.c_usr.run("rm -rf {}".format(q(path)))
+        logger.info("Deleting {}".format(q(self.c.versions_dir + "/" + path)))
+        self.c_usr.run("rm -rf {}".format(q(self.c.versions_dir + "/" + path)))
 
     def delete_versions(self, to_delete):
         versions_list = self.list_versions()
@@ -195,8 +195,8 @@ class DjangoConnection:
                 logger.warning(
                         "Refusing to delete protected version: {}".format(path))
                 continue
-            logger.info("Deleting {}".format(q(path)))
-            self.c_usr.run("rm -rf {}".format(q(path)))
+            logger.info("Deleting {}".format(q(self.c.versions_dir + "/" + path)))
+            self.c_usr.run("rm -rf {}".format(q(self.c.versions_dir + "/" + path)))
 
     def get_protected_versions(self):
         return [self.get_current_version(),
@@ -206,7 +206,7 @@ class DjangoConnection:
                 ]
 
     def list_versions(self):
-        folders = self.c_usr.run("ls -1").stdout.split()
+        folders = self.c_usr.run("ls -1 " + self.c.versions_dir).stdout.split()
         result = []
         for folder in folders:
             folder = folder.strip()

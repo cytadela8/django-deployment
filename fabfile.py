@@ -59,6 +59,7 @@ ns.configure({
     'config_subdir': "config",
     'venv_subdir': "venv",
     'static_subdir': "static",
+    'versions_dir': "~/",
     'deployment_dir': "~/deployment",
     'current_venv_dir': "~/venv",
     'current_code': "~/django",
@@ -108,7 +109,7 @@ def create_version(c, code, config):
 
     code_commit = code
     config_commit = config
-    new_path = "django" \
+    new_path = c.versions_dir + "/django" \
                + "-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") \
                + "-" + code_commit[:6] \
                + "-" + config_commit[:6]
