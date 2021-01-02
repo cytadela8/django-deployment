@@ -73,6 +73,7 @@ ns.configure({
     'backup_script': "~/script/backup_database.sh",
     'admin_username': "admin",
     'app_username': "app",
+    'perform_install_script': "~/django-current/config/perform_install.sh",
 })
 
 
@@ -213,9 +214,7 @@ def deploy(c, code, config, check_hotfixes=True, backup=True):
         s.django_check_manage()
         if backup:
             s.backup_database()
-        s.django_clear_cache()
-        s.django_collect_static()
-        s.django_compress()
+        s.django_perform_install()
 
     except Exception as e:
         logger.error("Exception caught")

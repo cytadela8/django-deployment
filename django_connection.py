@@ -139,26 +139,11 @@ class DjangoConnection:
             with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py migrate --no-input")
 
-    def django_collect_static(self):
-        logger.info("Collecting Django static files")
+    def django_prepare_install(self):
+        logger.info("Preparing Django version install")
         with self.c_usr.prefix(
                 "source {}/bin/activate".format(self.c.current_venv_dir)):
-            with self.c_usr.cd(self.c.deployment_dir):
-                self.c_usr.run("./manage.py collectstatic --no-input")
-
-    def django_clear_cache(self):
-        logger.info("Clearing Django cache")
-        with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.c.current_venv_dir)):
-            with self.c_usr.cd(self.c.deployment_dir):
-                self.c_usr.run("./manage.py clear_cache")
-
-    def django_compress(self):
-        logger.info("Running django-compress")
-        with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.c.current_venv_dir)):
-            with self.c_usr.cd(self.c.deployment_dir):
-                self.c_usr.run("./manage.py compress")
+            self.c_usr.run(self.c.perform_install_script)
 
     def check_app_works(self):
         logger.info("Testing connection to {}".format(self.c.website_url))
