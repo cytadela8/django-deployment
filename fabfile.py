@@ -71,7 +71,7 @@ ns.configure({
     'systemd_service': "app",
     'maintenance_start_script': "~/scripts/start_maintenance.sh",
     'maintenance_stop_script': "~/scripts/stop_maintenance.sh",
-    'backup_script': "~/script/backup_database.sh",
+    'backup_script': "~/scripts/backup_database.sh",
     'admin_username': "admin",
     'app_username': "app",
     'perform_install_script': "~/django-current/config/perform_install.sh",
