@@ -133,8 +133,7 @@ ns.add_task(create_version)
             'clear_cache': "Clear Django cache (defaults to yes)",
             'compress': "Perform django-compress (defaults to no)"})
 @handle_exceptions
-def change_version(c, name, migrate=True, collect_static=False,
-                   clear_cache=True, compress=False):
+def change_version(c, name, migrate=True, prepare_install=False):
     """
     Change running version
     """
@@ -150,12 +149,8 @@ def change_version(c, name, migrate=True, collect_static=False,
 
     if migrate:
         s.django_migrations()
-    if collect_static:
-        s.django_collect_static()
-    if clear_cache:
-        s.django_clear_cache()
-    if compress:
-        s.django_compress()
+    if prepare_install:
+        s.django_prepare_install()
 
     s.start_django()
 

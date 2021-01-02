@@ -45,7 +45,7 @@ class DjangoConnection:
             # Prepare venv
             logger.info("Creating virtualenv")
             self.c_usr.run("python -m venv {}".format(q(self.c.venv_subdir)))
-            with self.c_usr.prefix("source ~/{}/{}/bin/activate"
+            with self.c_usr.prefix("source {}/{}/bin/activate"
                                    .format(path, q(self.c.venv_subdir))):
                 with self.c_usr.cd(self.c.code_subdir):
                     self.c_usr.run("pip install -r requirements.txt")
