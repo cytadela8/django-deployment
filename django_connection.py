@@ -139,7 +139,7 @@ class DjangoConnection:
             with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py migrate --no-input")
 
-    def django_prepare_install(self):
+    def django_perform_install(self):
         logger.info("Preparing Django version install")
         with self.c_usr.prefix(
                 "source {}/bin/activate".format(self.c.current_venv_dir)):

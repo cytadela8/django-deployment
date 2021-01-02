@@ -19,6 +19,7 @@ environment:
 - scripts:
     - all return a non zero exit code on failure
     - ~app/scripts/backup_database.sh - backups the Django App database
+        - assumed that it outputs backup path
     - ~app/scripts/start_maintenance.sh - performs pre app update tasks
     - ~app/scripts/stop_maintenance.sh - performs post app update tasks (run also when update failed, but start_maintanance was run before)
 - Systemd django.service manages the Django App supervisord
@@ -150,7 +151,7 @@ def change_version(c, name, migrate=True, prepare_install=False):
     if migrate:
         s.django_migrations()
     if prepare_install:
-        s.django_prepare_install()
+        s.django_perform_install()
 
     s.start_django()
 
@@ -285,5 +286,5 @@ def delete_old_versions(c, to_keep=10):
     if len(versions) <= to_keep:
         print("Nothing to do")
     else:
-        s.delete_versions(versions[:-to_keep])
+        s.delete_versions(sorted(versions)[:-to_keep])
 ns.add_task(delete_old_versions)
