@@ -1,0 +1,9 @@
+host: my-vps.com
+website_url: https://django-app.com/
+code_repo_url: git@github.com:user/django-app.git
+config_repo_url: git@github.com:user/django-app-config.git
+code_branch: master
+config_branch: config
+
+run:
+    hide: both
