@@ -9,38 +9,16 @@ from logger import logger
 
 
 class DjangoConnection:
-    CODE_SUBDIR = "code"
-    CONFIG_SUBDIR = "config"
-    VENV_SUBDIR = "venv"
-    STATIC_SUBDIR = "static"
-    DEPLOYMENT_DIR = "~/deployment"
-    CURRENT_VENV_DIR = "~/venv"
-    CURRENT_CODE = "~/django"
-    CURRENT_CONFIG = "~/django-current/config/"
-    CURRENT_MAIN = "~/django-current"
-    PREVIOUS_MAIN = "~/django-previous"
-    CURRENT_WORKING = "~/django-working"
-    PREVIOUS_WORKING = "~/django-previous-working"
-    SYSTEMD_SERVICE = "django"
-    MAINTENANCE_START_SCRIPT = "~/scripts/start_maintenance.sh"
-    MAINTENANCE_STOP_SCRIPT = "~/scripts/stop_maintenance.sh"
-    BACKUP_SCRIPT = "~/script/backup_database.sh"
-    ADMIN_USERNAME = "admin"
-    APP_USERNAME = "app"
 
     def __init__(self, config):
-        self.website_url = config.website_url
-        self.code_repo_url = config.code_repo_url
-        self.config_repo_url = config.config_repo_url
-        self.code_branch = config.code_branch
-        self.config_branch = config.config_branch
+        self.c = config
 
         logger.info("Connecting to {}".format(config.host))
-        self.c_adm = Connection(host=config.host, user=self.ADMIN_USERNAME,
+        self.c_adm = Connection(host=config.host, user=self.c.admin_username,
                                 config=config)
-        self.c_usr = Connection(host=config.host, user=self.APP_USERNAME, config=config)
-        assert (self.c_adm.run('whoami').stdout.strip() == self.ADMIN_USERNAME)
-        assert (self.c_usr.run('whoami').stdout.strip() == self.APP_USERNAME)
+        self.c_usr = Connection(host=config.host, user=self.c.app_username, config=config)
+        assert (self.c_adm.run('whoami').stdout.strip() == self.c.admin_username)
+        assert (self.c_usr.run('whoami').stdout.strip() == self.c.app_username)
 
     @staticmethod
     def get_instance(config):
@@ -55,25 +33,24 @@ class DjangoConnection:
         logger.info("Creating code and config files at {}".format(path))
         self.c_usr.run("mkdir {}".format(path))
         with self.c_usr.cd(path):
-            self.c_usr.run("mkdir {}".format(self.STATIC_SUBDIR))
+            self.c_usr.run("mkdir {}".format(self.c.static_subdir))
             # Download code
-            self._download_repository(self.code_repo_url, self.CODE_SUBDIR,
-                                      code_commit, self.code_branch)
+            self._download_repository(self.c.code_repo_url, self.c.code_subdir,
+                                      code_commit, self.c.code_branch)
 
             # Download config
-            self._download_repository(self.config_repo_url, self.CONFIG_SUBDIR,
-                                      config_commit, self.config_branch)
+            self._download_repository(self.c.config_repo_url, self.c.config_subdir,
+                                      config_commit, self.c.config_branch)
 
             # Prepare venv
             logger.info("Creating virtualenv")
-            self.c_usr.run("virtualenv {}".format(q(self.VENV_SUBDIR)))
+            self.c_usr.run("python -m venv {}".format(q(self.c.venv_subdir)))
             with self.c_usr.prefix("source ~/{}/{}/bin/activate"
-                                   .format(path, q(self.VENV_SUBDIR))):
-                with self.c_usr.cd(self.CODE_SUBDIR):
+                                   .format(path, q(self.c.venv_subdir))):
+                with self.c_usr.cd(self.c.code_subdir):
                     self.c_usr.run("pip install -r requirements.txt")
-                with self.c_usr.cd(self.CONFIG_SUBDIR):
+                with self.c_usr.cd(self.c.config_subdir):
                     self.c_usr.run("pip install -r requirements.txt")
-                self.c_usr.run("nodeenv -n 9.9.0 -p")
 
     def _download_repository(self, url, path, commit, branch):
         logger.info("Downloading repository {} to {}, commit {}"
@@ -88,34 +65,34 @@ class DjangoConnection:
 
     def stop_maintenance(self):
         logger.info("Stopping maintenance mode")
-        self.c_adm.run(self.MAINTENANCE_STOP_SCRIPT)
+        self.c_adm.run(self.c.maintenance_stop_script)
 
     def start_maintenance(self):
         logger.info("Starting maintenance mode")
-        self.c_adm.run(self.MAINTENANCE_START_SCRIPT)
+        self.c_adm.run(self.c.maintenance_start_script)
 
     def start_django(self):
         self.stop_maintenance()
         logger.info("Starting the App")
-        self.c_adm.run("sudo systemctl start -la " + self.SYSTEMD_SERVICE)
+        self.c_adm.run("sudo systemctl start -la " + self.c.systemd_service)
 
     def stop_django(self):
         """
         Stop the Django App, but we don't fail if already stopped
         """
         logger.info("Stopping django")
-        self.c_adm.run("sudo systemctl stop -la " + self.SYSTEMD_SERVICE)
+        self.c_adm.run("sudo systemctl stop -la " + self.c.systemd_service)
 
     def backup_database(self):
         logger.info("Backing up database")
-        filepath = self.c_adm.run(self.BACKUP_SCRIPT).stdout.strip()
+        filepath = self.c_adm.run(self.c.backup_script).stdout.strip()
         assert int(self.c_adm.run('stat --printf="%s" {}'.format(
             filepath)).stdout) > 100 * 1000  # 100kB
 
     def check_for_uncommited_changes(self):
         logger.info("Checking for uncommited or unpushed changes")
-        self._check_repository(self.CURRENT_CODE)
-        self._check_repository(self.CURRENT_CONFIG)
+        self._check_repository(self.c.current_code)
+        self._check_repository(self.c.current_config)
 
     def _check_repository(self, path):
         with self.c_usr.cd(path):
@@ -127,9 +104,9 @@ class DjangoConnection:
 
     def change_codebase(self, new_path):
         logger.info("Changing codebase to {}".format(new_path))
-        self.c_usr.run("rm -f {}".format(self.PREVIOUS_MAIN))
-        self.c_usr.run("mv {} {}".format(self.CURRENT_MAIN, self.PREVIOUS_MAIN))
-        self.c_usr.run("ln -s {} {}".format(q(new_path), self.CURRENT_MAIN))
+        self.c_usr.run("rm -f {}".format(self.c.previous_main))
+        self.c_usr.run("mv {} {}".format(self.c.current_main, self.c.previous_main))
+        self.c_usr.run("ln -s {} {}".format(q(new_path), self.c.current_main))
 
     def change_to_previous_codebase(self):
         self.change_codebase(self.get_previous_version())
@@ -137,10 +114,10 @@ class DjangoConnection:
     def mark_working(self, new_path):
         if new_path == self.get_working_version():
             return
-        self.c_usr.run("rm -f {}".format(self.PREVIOUS_WORKING))
+        self.c_usr.run("rm -f {}".format(self.c.previous_working))
         self.c_usr.run(
-            "mv {} {}".format(self.CURRENT_WORKING, self.PREVIOUS_WORKING))
-        self.c_usr.run("ln -s {} {}".format(q(new_path), self.CURRENT_WORKING))
+            "mv {} {}".format(self.c.current_working, self.c.previous_working))
+        self.c_usr.run("ln -s {} {}".format(q(new_path), self.c.current_working))
 
     def django_check_manage(self):
         """
@@ -151,61 +128,61 @@ class DjangoConnection:
         """
         logger.info("Checking manage.py")
         with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.CURRENT_VENV_DIR)):
-            with self.c_usr.cd(self.DEPLOYMENT_DIR):
+                "source {}/bin/activate".format(self.c.current_venv_dir)):
+            with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py")
 
     def django_migrations(self):
         logger.info("Applying Django migrations")
         with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.CURRENT_VENV_DIR)):
-            with self.c_usr.cd(self.DEPLOYMENT_DIR):
+                "source {}/bin/activate".format(self.c.current_venv_dir)):
+            with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py migrate --no-input")
 
     def django_collect_static(self):
         logger.info("Collecting Django static files")
         with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.CURRENT_VENV_DIR)):
-            with self.c_usr.cd(self.DEPLOYMENT_DIR):
+                "source {}/bin/activate".format(self.c.current_venv_dir)):
+            with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py collectstatic --no-input")
 
     def django_clear_cache(self):
         logger.info("Clearing Django cache")
         with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.CURRENT_VENV_DIR)):
-            with self.c_usr.cd(self.DEPLOYMENT_DIR):
+                "source {}/bin/activate".format(self.c.current_venv_dir)):
+            with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py clear_cache")
 
     def django_compress(self):
         logger.info("Running django-compress")
         with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.CURRENT_VENV_DIR)):
-            with self.c_usr.cd(self.DEPLOYMENT_DIR):
+                "source {}/bin/activate".format(self.c.current_venv_dir)):
+            with self.c_usr.cd(self.c.deployment_dir):
                 self.c_usr.run("./manage.py compress")
 
     def check_app_works(self):
-        logger.info("Testing connection to {}".format(self.website_url))
-        r = requests.get(self.website_url)
+        logger.info("Testing connection to {}".format(self.c.website_url))
+        r = requests.get(self.c.website_url)
         count = 0
         # Starting of Django App may take some time.
         while not r.ok and count < 60:
             logger.debug("Waiting for the App start...")
             time.sleep(1)
-            r = requests.get(self.website_url)
+            r = requests.get(self.c.website_url)
             count += 1
         assert r.ok
 
     def get_current_version(self):
-        return self._get_link_target_basename(self.CURRENT_MAIN)
+        return self._get_link_target_basename(self.c.current_main)
 
     def get_previous_version(self):
-        return self._get_link_target_basename(self.PREVIOUS_MAIN)
+        return self._get_link_target_basename(self.c.previous_main)
 
     def get_working_version(self):
-        return self._get_link_target_basename(self.CURRENT_WORKING)
+        return self._get_link_target_basename(self.c.current_working)
 
     def get_previous_working_version(self):
-        return self._get_link_target_basename(self.PREVIOUS_WORKING)
+        return self._get_link_target_basename(self.c.previous_working)
 
     def _get_link_target_basename(self, link):
         return os.path.basename(self._get_link_target(link))

@@ -54,6 +54,26 @@ warnings.filterwarnings("ignore", module="paramiko.kex_ecdh_nist")
 
 
 ns = Collection()
+ns.configure({
+    'code_subdir': "code",
+    'config_subdir': "config",
+    'venv_subdir': "venv",
+    'static_subdir': "static",
+    'deployment_dir': "~/deployment",
+    'current_venv_dir': "~/venv",
+    'current_code': "~/django",
+    'current_config': "~/django-current/config/",
+    'current_main': "~/django-current",
+    'previous_main': "~/django-previous",
+    'current_working': "~/django-working",
+    'previous_working': "~/django-previous-working",
+    'systemd_service': "app",
+    'maintenance_start_script': "~/scripts/start_maintenance.sh",
+    'maintenance_stop_script': "~/scripts/stop_maintenance.sh",
+    'backup_script': "~/script/backup_database.sh",
+    'admin_username': "admin",
+    'app_username': "app",
+})
 
 
 @task
