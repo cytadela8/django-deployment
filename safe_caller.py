@@ -2,7 +2,7 @@
 import sys
 import caller_config
 import subprocess
-
+import os
 
 def sanitize_commit_info(commit: str):
     commit = commit.strip()
@@ -18,17 +18,21 @@ def get_master_hash_of_repo(url: str):
 
 
 def main():
-    if len(sys.argv) <= 1:
+    args = sys.argv[1:]
+    if 'SSH_ORIGINAL_COMMAND' in os.environ:
+        print("Looking at original SSH command...")
+        args = os.environ['SSH_ORIGINAL_COMMAND'].strip().split(' ')
+    if len(args) == 0:
         print("Missing arguments")
         sys.exit(1)
-    elif len(sys.argv) == 2:
-        code_commit = sanitize_commit_info(sys.argv[1])
+    elif len(args) == 1:
+        code_commit = sanitize_commit_info(args[0])
         config_commit = sanitize_commit_info(
             get_master_hash_of_repo(caller_config.config_repo)
         )
-    elif len(sys.argv) == 3:
-        code_commit = sanitize_commit_info(sys.argv[1])
-        config_commit = sanitize_commit_info(sys.argv[2])
+    elif len(args) == 2:
+        code_commit = sanitize_commit_info(args[0])
+        config_commit = sanitize_commit_info(args[1])
     else:
         print("Too many arguments")
         sys.exit(1)
