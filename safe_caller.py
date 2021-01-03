@@ -37,7 +37,10 @@ if __name__ == "__main__":
         print("Too many arguments")
         sys.exit(1)
 
-    if not code_commit or not config_commit:
-        print("Invalid argument")
+    if not code_commit:
+        print("Invalid code commit")
+        sys.exit(1)
+    if not config_commit:
+        print("Invalid config commit")
         sys.exit(1)
     main(code_commit, config_commit)
