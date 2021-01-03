@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+fab_path = "venv/bin/fab"
+config_repo = "https://repo_url"
