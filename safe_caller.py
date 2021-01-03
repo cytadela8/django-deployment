@@ -14,7 +14,7 @@ def sanitize_commit_info(commit: str):
 def get_master_hash_of_repo(url: str):
     return subprocess.check_output(
             ["git", "ls-remote", url, "refs/heads/master"]
-        ).decode('ascii').split(" ")[0]
+        ).decode('ascii').split("\t")[0]
 
 
 def main(code_commit: str, config_commit: str):
