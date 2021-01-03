@@ -17,11 +17,7 @@ def get_master_hash_of_repo(url: str):
         ).decode('ascii').split("\t")[0]
 
 
-def main(code_commit: str, config_commit: str):
-    subprocess.call([caller_config.fab_path, "deploy", code_commit, config_commit])
-
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) <= 1:
         print("Missing arguments")
         sys.exit(1)
@@ -43,4 +39,11 @@ if __name__ == "__main__":
     if not config_commit:
         print("Invalid config commit")
         sys.exit(1)
-    main(code_commit, config_commit)
+    subprocess.call(
+        [caller_config.fab_path, "deploy", code_commit, config_commit],
+        cwd=caller_config.deployment_script_root,
+    )
+
+
+if __name__ == "__main__":
+    main()

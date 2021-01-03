@@ -3,3 +3,4 @@
 
 fab_path = "venv/bin/fab"
 config_repo = "https://repo_url"
+deployment_script_root = "/home/deploy/django-deployment"
