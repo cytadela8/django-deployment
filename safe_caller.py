@@ -20,7 +20,7 @@ def get_master_hash_of_repo(url: str):
 def main():
     args = sys.argv[1:]
     if 'SSH_ORIGINAL_COMMAND' in os.environ:
-        print("Looking at original SSH command...")
+        print("Looking at original SSH command...", flush=True)
         args = os.environ['SSH_ORIGINAL_COMMAND'].strip().split(' ')
     if len(args) == 0:
         print("Missing arguments")
