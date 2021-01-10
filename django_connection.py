@@ -145,11 +145,12 @@ class DjangoConnection:
                 self.c_usr.run("./manage.py migrate --no-input")
 
     def django_perform_install(self):
-        logger.info("Performing Django version install")
-        with self.c_usr.prefix(
-                "source {}/bin/activate".format(self.c.current_venv_dir)):
-            with self.c_usr.cd(self.c.deployment_dir):
-                self.c_usr.run(self.c.install_script)
+        if self.c.install_script is not None:
+            logger.info("Performing Django version install")
+            with self.c_usr.prefix(
+                    "source {}/bin/activate".format(self.c.current_venv_dir)):
+                with self.c_usr.cd(self.c.deployment_dir):
+                    self.c_usr.run(self.c.install_script)
 
     def check_app_works(self):
         logger.info("Testing connection to {}".format(self.c.website_url))
