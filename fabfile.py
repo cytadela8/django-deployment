@@ -1,45 +1,4 @@
 #!/usr/bin/python3
-"""
-Django Deployment Automation script
-
-This script is designed limit downtime when performing updates on Django
-applications. The "deploy" command is designed to perform a
-non-destructive update of Django with multiple checks and fallback procedures
-designed to revert changes in case of failure. This script also provides a few other
-commands for checks and manual reverting to previous code versions.
-
-All commands can be listed by executing `fab --list` after installing
-dependencies. You can get more help with `fab --list COMMAND_NAME`.
-
-IMPORTANT: This scripts makes following assumptions about the production
-environment:
-- user "app" manages the Django App code and config
-- user "admin" has sudo access
-- configuration variables in fabric.yml are set correctly
-- scripts:
-    - all return a non zero exit code on failure
-    - ~app/scripts/backup_database.sh - backups the Django App database
-        - assumed that it outputs backup path
-    - ~app/scripts/start_maintenance.sh - performs pre app update tasks
-    - ~app/scripts/stop_maintenance.sh - performs post app update tasks (run also when update failed, but start_maintanance was run before)
-- Systemd django.service manages the Django App supervisord
-- symlinks:
-    - ~app/django-current, ~app/django-previous, ~app/django-working,
-        ~app/django-previous-working - are valid symlinks to the Django App Versions
-        directories (see below for definition of the Django App version directory)
-    - Django STATIC_ROOT points (possibly via symlink) to
-        ~app/django-current/static
-    - ~app/venv is a symlink to ~app/django-current/venv
-    - ~app/django is a symlink to ~app/django-current/code
-    - ~app/deployment is an the Django App deployment directory
-    - settings*, supervisord*, wsgi*, manage.py, django in ~app/deployment are
-        symlinks to respective files in ~app/django-current/config
-- the Django App version directory contents:
-    - code - the Django App code git repository
-    - config - the Django App configuration files git repository
-    - static - Django STATIC_ROOT files
-    - venv - Python virtualenv with the Django App dependencies installed
-"""
 from fabric import task
 from invoke import Collection
 import invoke.exceptions
