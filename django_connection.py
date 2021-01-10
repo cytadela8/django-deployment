@@ -47,10 +47,15 @@ class DjangoConnection:
             self.c_usr.run("python -m venv {}".format(q(self.c.venv_subdir)))
             with self.c_usr.prefix("source {}/{}/bin/activate"
                                    .format(path, q(self.c.venv_subdir))):
-                with self.c_usr.cd(self.c.code_subdir):
-                    self.c_usr.run("pip install -r requirements.txt")
-                with self.c_usr.cd(self.c.config_subdir):
-                    self.c_usr.run("pip install -r requirements.txt")
+                if self.c.build_script is None:
+                    code_requirements = self.c.code_subdir + "/requirements.txt"
+                    if os.path.isfile(code_requirements):
+                        self.c_usr.run("pip install -r " + q(code_requirements))
+                    config_requirements = self.c.config_subdir + "/requirements.txt"
+                    if os.path.isfile(config_requirements):
+                        self.c_usr.run("pip install -r " + q(config_requirements))
+                else:
+                    self.c_usr.run(self.c.build_script)
 
     def _download_repository(self, url, path, commit, branch):
         logger.info("Downloading repository {} to {}, commit {}"
@@ -140,11 +145,11 @@ class DjangoConnection:
                 self.c_usr.run("./manage.py migrate --no-input")
 
     def django_perform_install(self):
-        logger.info("Preparing Django version install")
+        logger.info("Performing Django version install")
         with self.c_usr.prefix(
                 "source {}/bin/activate".format(self.c.current_venv_dir)):
             with self.c_usr.cd(self.c.deployment_dir):
-                self.c_usr.run(self.c.perform_install_script)
+                self.c_usr.run(self.c.install_script)
 
     def check_app_works(self):
         logger.info("Testing connection to {}".format(self.c.website_url))

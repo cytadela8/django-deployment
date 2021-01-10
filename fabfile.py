@@ -75,7 +75,8 @@ ns.configure({
     'backup_script': "~/scripts/backup_database.sh",
     'admin_username': "admin",
     'app_username': "app",
-    'perform_install_script': "~/django-current/config/perform_install.sh",
+    'build_script': None,
+    'install_script': None,
 })
 
 
