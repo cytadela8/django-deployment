@@ -40,10 +40,19 @@ def main():
             print("Wrong number of arguments - " + str(len(args)))
             sys.exit(1)
 
-        subprocess.call(
+        ret = subprocess.call(
             [caller_config.fab_path, "deploy", code_commit, config_commit],
             cwd=caller_config.deployment_script_root,
         )
+        if ret != 0:
+            if ret < 0:
+                print("Killed by signal", -ret)
+                sys.exit(2)
+            else:
+                print("Command failed with return code", ret)
+                sys.exit(ret)
+        else:
+            print("SUCCESS!!")
     except InvalidCommit:
         print("Invalid commit")
         sys.exit(1)
