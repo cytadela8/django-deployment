@@ -3,6 +3,7 @@ import sys
 import caller_config
 import subprocess
 import os
+from filelock import FileLock
 
 
 class InvalidCommit(Exception):
@@ -39,11 +40,12 @@ def main():
         else:
             print("Wrong number of arguments - " + str(len(args)))
             sys.exit(1)
-
-        ret = subprocess.call(
-            [caller_config.fab_path, "deploy", code_commit, config_commit],
-            cwd=caller_config.deployment_script_root,
-        )
+        lock = FileLock("deploy.lock")
+        with lock:
+            ret = subprocess.call(
+                [caller_config.fab_path, "deploy", code_commit, config_commit],
+                cwd=caller_config.deployment_script_root,
+            )
         if ret != 0:
             if ret < 0:
                 print("Killed by signal", -ret)
